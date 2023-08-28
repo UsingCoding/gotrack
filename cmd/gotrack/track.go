@@ -99,21 +99,20 @@ func executeTrackTable(ctx *cli.Context) error {
 		return errors.New("empty path to time track file")
 	}
 
-	host := ctx.String("youtrack-host")
-	if host == "" {
-		return errors.New("empty youtrack-host")
+	configPath := ctx.String("config")
+	if configPath == "" {
+		return errors.New("empty path to config")
 	}
-
-	token := ctx.String("youtrack-token")
-	if token == "" {
-		return errors.New("empty youtrack-token")
+	c, err := config.Parser{}.Parse(configPath)
+	if err != nil {
+		return err
 	}
 
 	dryRun := ctx.Bool("dry-run")
 
 	tracker := youtrack.NewClient(
-		host,
-		token,
+		c.YouTrackHost,
+		c.Token,
 	)
 	srv := app.NewService(
 		tracker,
