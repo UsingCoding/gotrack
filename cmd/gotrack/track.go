@@ -32,6 +32,11 @@ func track(homeDir string) *cli.Command {
 						Aliases: []string{"tt"},
 						Usage:   "Path to csv file with time track",
 					},
+					&cli.StringFlag{
+						Name:    "date",
+						Aliases: []string{"d"},
+						Usage:   "Date of time track",
+					},
 					&cli.BoolFlag{
 						Name:  "dry-run",
 						Usage: "Run track in dry-run",
@@ -99,6 +104,19 @@ func executeTrackTable(ctx *cli.Context) error {
 		return errors.New("empty path to time track file")
 	}
 
+	dateStr := ctx.String("date")
+	if dateStr == "" {
+		return errors.New("empty date to time track")
+	}
+
+	date := time.Now()
+	if dateStr != "" {
+		var err error
+		date, err = time.Parse(time.DateOnly, dateStr)
+		if err != nil {
+			return errors.Wrapf(err, "failed to parse date %s", dateStr)
+		}
+	}
 	configPath := ctx.String("config")
 	if configPath == "" {
 		return errors.New("empty path to config")
@@ -120,5 +138,5 @@ func executeTrackTable(ctx *cli.Context) error {
 		reporter.NewReporter(log.Default()),
 	)
 
-	return srv.TrackTimeFromTable(ctx.Context, dryRun)
+	return srv.TrackTimeFromTable(ctx.Context, date, dryRun)
 }

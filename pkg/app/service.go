@@ -14,7 +14,7 @@ import (
 
 type Service interface {
 	Track(ctx context.Context, issueID, comment string, spentTime time.Duration, date time.Time) error
-	TrackTimeFromTable(ctx context.Context, dryRun bool) error
+	TrackTimeFromTable(ctx context.Context, date time.Time, dryRun bool) error
 }
 
 func NewService(
@@ -50,7 +50,7 @@ func (s *service) Track(ctx context.Context, issueID, comment string, spentTime 
 	return err
 }
 
-func (s *service) TrackTimeFromTable(ctx context.Context, dryRun bool) error {
+func (s *service) TrackTimeFromTable(ctx context.Context, date time.Time, dryRun bool) error {
 	records, err := s.dataProvider.Read(ctx)
 	if err != nil {
 		return errors.WithStack(err)
@@ -78,7 +78,7 @@ func (s *service) TrackTimeFromTable(ctx context.Context, dryRun bool) error {
 				IssueID:  record.IssueID,
 				Text:     record.Comment,
 				Duration: spentTime,
-				Date:     time.Now(),
+				Date:     date,
 			})
 
 			switch errors.Cause(err2) {
