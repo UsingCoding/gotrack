@@ -105,10 +105,6 @@ func executeTrackTable(ctx *cli.Context) error {
 	}
 
 	dateStr := ctx.String("date")
-	if dateStr == "" {
-		return errors.New("empty date to time track")
-	}
-
 	date := time.Now()
 	if dateStr != "" {
 		var err error
