@@ -35,33 +35,44 @@ func (provider *csvFileDataProvider) Read(ctx context.Context) ([]dataprovider.R
 		return nil, err
 	}
 
-	var res []dataprovider.Record
+	var (
+		res []dataprovider.Record
+		i   int
+	)
 	for {
+		i++
+
 		record, err2 := r.Read()
 		if err2 != nil {
 			if err2 == io.EOF {
 				break
 			}
-			return nil, errors.Wrap(err2, "failed to read record")
+			return nil, errors.Wrapf(err2, "failed to read record %d", i)
+		}
+
+		id := record[0]
+		if id == "" {
+			// if issue id empty, skip record parsing
+			continue
 		}
 
 		startTime, err2 := time.Parse(time.TimeOnly, appendEmptySeconds(record[2]))
 		if err2 != nil {
-			return nil, errors.Wrapf(err2, "failed to parse startTime %s", record[2])
+			return nil, errors.Wrapf(err2, "failed to parse startTime %s at %d record", record[2], i)
 		}
 
 		endTime, err2 := time.Parse(time.TimeOnly, appendEmptySeconds(record[3]))
 		if err2 != nil {
-			return nil, errors.Wrapf(err2, "failed to parse endTime %s", record[3])
+			return nil, errors.Wrapf(err2, "failed to parse endTime %s at %d record", record[3], i)
 		}
 
 		tracked, err2 := strconv.ParseBool(record[4])
 		if err2 != nil {
-			return nil, errors.Wrapf(err2, "failed to parse tracked %s", record[4])
+			return nil, errors.Wrapf(err2, "failed to parse tracked %s at %d record", record[4], i)
 		}
 
 		res = append(res, dataprovider.Record{
-			IssueID: record[0],
+			IssueID: id,
 			Comment: record[1],
 			Start:   startTime,
 			End:     endTime,
